@@ -1,0 +1,89 @@
+
+################################ CONFORMAL PREDICTION ###################################
+
+ICP <- function(data, formula, normalized = TRUE, conf = 0.95, beta = 1, ntree = 500, data_split = c(0.5, 0.25, 0.25)){
+  # set seed, so that the data splits will always be the same
+  # good for testing different settings, but might remove in final version
+  set.seed(12345)
+  
+  # Divide data into train, calibration and test sets (50% - 25% - 25%)
+  n = dim(data)[1]
+  train_id = sample(1:n, floor(n * data_split[1])) # training ids
+  train = data[train_id,]
+  cal_test_id = setdiff(1:n, train_id) # cal + test ids
+  cal_id = sample(cal_test_id, floor(n * data_split[2])) # calibration ids
+  cal = data[cal_id,]
+  test_id = setdiff(cal_test_id,cal_id) # test ids
+  test = data[test_id,]
+  
+  # extract name of the response variable
+  y = as.character(formula)[2]
+  
+  # train random forest on the training set
+  rF <- randomForest(formula = formula, data = train, ntree = ntree)
+  
+  # predict for the calibration and test sets 
+  # (predict.all is only necessary for the normalized version to get all individual tree predictions)
+  rF_pred_cal <- predict(rF, newdata = cal, predict.all = TRUE)
+  rF_pred_test <- predict(rF, newdata = test, predict.all = TRUE)
+  
+  
+  if (normalized) {
+    # DO NORMALIZED ICP WITH VARIANCE-BASED NONCONFORMITY MEASURE
+    
+    ## calculate normalized nonconformity score for the calibration set
+    
+    # difficulty estimate for the calibration set (variance of the predictions of the individual trees in the forest)
+    mu_cal = apply(rF_pred_cal$individual, 1, var)
+    
+    score_cal = abs(cal[,y] - rF_pred_cal$aggregate) / (mu_cal + beta)
+    
+    # find the smallest score that satisfies equation (3)
+    n_cal = dim(cal)[1]
+    #score_bound = sort(score_cal)[n_cal * conf + 2] # find a better way than adding 2
+    score_bound = sort(score_cal, decreasing = T)[floor((1 - conf) * (n_cal + 1))] #p78 Evaluation of Variance-based nonconformity
+    
+    # check if equation holds
+    #(sum(score_cal < score_bound) + 1) / (n_cal + 1) >= conf #Eq. 3 from Regression Conformal Prediction
+    
+    # difficulty estimate for the test set
+    mu_test = apply(rF_pred_test$individual, 1, var)
+    
+    # add prediction and bounds to the test df
+    test$pred = rF_pred_test$aggregate # average of all trees in the forest
+    test$lower = test$pred - score_bound * (mu_test + beta)
+    test$upper = test$pred + score_bound * (mu_test + beta)
+    
+  } else{
+    # DO UNNORMALIZED ICP
+    
+    # calculate nonconformity score for the calibration set
+    score_cal = abs(cal[,y] - rF_pred_cal$aggregate)
+    
+    # find the smallest score that satisfies equation (3)
+    n_cal = dim(cal)[1]
+    #score_bound = sort(score_cal)[n_cal * conf + 2] # find a better way than adding 2
+    score_bound = sort(score_cal, decreasing = T)[floor((1 - conf) * (n_cal + 1))] #p78 Evaluation of Variance-based nonconformity
+    # check if equation holds
+    #(sum(score_cal < score_bound) + 1) / (n_cal + 1) >= conf #Eq. 3 from Regression Conformal Prediction
+    
+    
+    # add prediction and bounds to the test df
+    test$pred = rF_pred_test$aggregate
+    test$lower = test$pred - score_bound
+    test$upper = test$pred + score_bound
+  }
+  
+  # calculate test coverage rate
+  n_test = dim(test)[1]
+  #test_coverage_rate = dim(test %>% filter(Rings >= lower & Rings <= upper))[1] / n_test #0.9588
+  test_coverage_rate = length(which(((test[,y] >= test$lower) * (test[,y] <= test$upper)) == 1)) / n_test
+  
+  # average size of intervals
+  mean_interval_size = mean((test %>% mutate(interval_size = upper - lower))$interval_size)
+  
+  # output list
+  res = list(test = test,
+             test_coverage_rate = test_coverage_rate,
+             mean_interval_size = mean_interval_size)
+}
