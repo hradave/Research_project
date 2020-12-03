@@ -21,7 +21,7 @@ conf = 0.95
 formula = formula(Rings ~ .)
 
 # ICP
-beta = 4
+beta = 0.01
 res_icp = ICP(abalone, formula, normalized = TRUE, beta = beta)
 icp = res_icp$test
 set.seed(1234) # set the seed if you don't want the plot function to use different random points
@@ -30,11 +30,11 @@ plot_prediction_bands(icp, x = 'Length', y = 'Rings',type = 'cp', conf = conf,
 res_icp$test_coverage_rate #norm(1): 0.9454545 norm(0.01): 0.9464 unnorm = 0.9588
 res_icp$mean_interval_size #norm(1): 9.49939   norm(0.01): 12.87  unnorm = 9.47
 hist(icp$upper - icp$lower)
-range(icp$upper - icp$lower) #beta1: 4.044-24.65
+range(icp$upper - icp$lower) #beta4: 4.044-24.65
 
 # bootstrap
-R = 1000
-res = bootstrap(abalone, formula, conf = conf, R = R, data_split = c(0.7, 0.3))
+R = 100
+res = bootstrap(abalone, formula, conf = conf, R = R, data_split = c(0.5, 0.25))
 bs = res$test
 set.seed(1234) # set the seed if you don't want the plot function to use different random points
 plot_prediction_bands(bs, x = 'Length', y = 'Rings', type = 'bs', bs_type = 'e',conf = conf, title = paste('R = ', R), sample_size = 100)

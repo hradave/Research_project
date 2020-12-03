@@ -80,7 +80,7 @@ ICP <- function(data, formula, normalized = TRUE, conf = 0.95, beta = 1, ntree =
   test_coverage_rate = length(which(((test[,y] >= test$lower) * (test[,y] <= test$upper)) == 1)) / n_test
   
   # average size of intervals
-  mean_interval_size = mean((test %>% mutate(interval_size = upper - lower))$interval_size)
+  mean_interval_size = mean(test$upper - test$lower)
   
   # output list
   res = list(test = test,

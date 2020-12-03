@@ -88,8 +88,8 @@ bootstrap <- function(data, formula, conf = 0.95, R = 100, ntree = 500, data_spl
   test_coverage_rate_q = length(which(((test[,y] >= test$lower_q) * (test[,y] <= test$upper_q)) == 1)) / n_test
   
   # average size of intervals
-  mean_interval_size_e = mean((test %>% mutate(interval_size = upper_e - lower_e))$interval_size)
-  mean_interval_size_q = mean((test %>% mutate(interval_size = upper_q - lower_q))$interval_size)
+  mean_interval_size_e = mean(test$upper_e - test$lower_e)
+  mean_interval_size_q = mean(test$upper_q - test$lower_q)
   
   # output list
   res = list(test = test,
