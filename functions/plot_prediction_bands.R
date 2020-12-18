@@ -12,7 +12,7 @@ plot_prediction_bands <- function(data, x, y, sample_size = 100, type = 'cp', ti
   data_sample = data_sample[order(data_sample[,x]),]
   
   # plot data points and their conformal prediction bands
-  plot(data_sample[,x], data_sample[,y], pch=15, bg="red", xlab = x, ylab = y,
+  plot(data_sample[,x], data_sample[,y], pch=15, col="black", xlab = x, ylab = y,
        #,main = paste0(title1, '(', conf * 100, '%) ', title)
        ylim = c(min(data_sample$lower, data_sample$upper, data_sample$pred, data_sample[,y]),
                 max(data_sample$lower, data_sample$upper, data_sample$pred, data_sample[,y])))
@@ -39,8 +39,8 @@ plot_prediction_bands <- function(data, x, y, sample_size = 100, type = 'cp', ti
       
     }
   }
-  legend('topleft', legend = c('True', 'Predicted', 'Prediction band'), pch = c(21,21,NA), 
-         lty = c(NA,NA,1), col = c('black', 'black', 'blue'), pt.bg = c('red','yellow', NA))
+  legend('topleft', legend = c('True', 'Predicted', 'Prediction band'), pch = c(15,21,NA), 
+         lty = c(NA,NA,1), col = c('black', 'black', 'blue'), pt.bg = c(NA,'yellow', NA))
   
   #outside = dim(data_sample %>% filter(Rings < lower | Rings > upper))[1]
   #outside = length(which(((data_sample[,y] >= data_sample$lower) * (data_sample[,y] <= data_sample$upper)) == 0))

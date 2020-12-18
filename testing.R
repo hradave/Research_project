@@ -19,14 +19,16 @@ colnames(abalone) = colnames
 
 # normalize target variable
 abalone$Rings = normalize(abalone$Rings)
+load('synth_data_50.RData')
 
 
 # variables set up
 conf = 0.95
 formula = formula(y ~ .)
-data = dataset
+data = dataset[1:10000,]
 
 data$y = normalize(data$y)
+
 
 # ICP
 beta = 0.01
@@ -78,12 +80,12 @@ range(res$test$upper_e-res$test$lower_q) #R1000(70% training): 3.74-4.596 (0.133
 
 
 # bootstrap PARALLEL
-
-start_time <- Sys.time()
-R = 100
-res = bootstrap_parallel(data , formula, conf = conf, ntree = 500, R = R, data_split = c(0.7, 0.3), cores = 8)
-end_time <- Sys.time()
-end_time - start_time 
+  
+  start_time <- Sys.time()
+  R = 500
+  res = bootstrap_parallel(data , formula, conf = conf, ntree = 125, R = R, data_split = c(0.7, 0.3), cores = 8)
+  end_time <- Sys.time()
+  end_time - start_time 
 #R100: 9.9 mins
 #R100 multicore 8: 3.14 mins
 #R100 multicore 4: 3.48 mins

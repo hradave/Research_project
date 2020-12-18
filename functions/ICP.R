@@ -1,26 +1,30 @@
 
 ################################ CONFORMAL PREDICTION ###################################
 
-ICP <- function(data, formula, normalized = TRUE, conf = 0.95, beta = 1, ntree = 500, data_split = c(0.575, 0.125, 0.3)){
-  # set seed, so that the data splits will always be the same
-  # good for testing different settings, but might remove in final version
+ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta = 0.01, ntree = 125){
+  
+  # set seed for reproducibility
   set.seed(12345)
   
-  # Divide data into train, calibration and test sets (50% - 25% - 25%)
-  n = dim(data)[1]
-  train_id = sample(1:n, floor(n * data_split[1])) # training ids
-  train = data[train_id,]
-  cal_test_id = setdiff(1:n, train_id) # cal + test ids
-  cal_id = sample(cal_test_id, floor(n * data_split[2])) # calibration ids
-  cal = data[cal_id,]
-  test_id = setdiff(cal_test_id,cal_id) # test ids
-  test = data[test_id,]
+  # Divide training data into proper training and calibration sets
+  train_cal_n = dim(train_cal)[1]
+  cal_n = 100 * floor(train_cal_n/400) - 1 # following the paper
+  
+  cal_id = sample(1:train_cal_n, cal_n) # calibration ids
+  cal = train_cal[cal_id,]
+  
+  train = setdiff(1:train_cal_n, cal_id) # train ids
+  train = train_cal[train,]
   
   # extract name of the response variable
   y = as.character(formula)[2]
   
-  # train random forest on the training set
+  # train random forest on the training set (measure CPU time)
+  start_time <- Sys.time()
   rF <- randomForest(formula = formula, data = train, ntree = ntree)
+  end_time <- Sys.time()
+  runtime = as.numeric(difftime(end_time, start_time, units = 'secs'))
+  runtime
   
   # predict for the calibration and test sets 
   # (predict.all is only necessary for the normalized version to get all individual tree predictions)
