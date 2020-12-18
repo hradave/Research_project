@@ -12,7 +12,7 @@ plot_prediction_bands <- function(data, x, y, sample_size = 100, type = 'cp', ti
   data_sample = data_sample[order(data_sample[,x]),]
   
   # plot data points and their conformal prediction bands
-  plot(data_sample[,x], data_sample[,y], pch=21, bg="red", xlab = x, ylab = y,
+  plot(data_sample[,x], data_sample[,y], pch=15, bg="red", xlab = x, ylab = y,
        #,main = paste0(title1, '(', conf * 100, '%) ', title)
        ylim = c(min(data_sample$lower, data_sample$upper, data_sample$pred, data_sample[,y]),
                 max(data_sample$lower, data_sample$upper, data_sample$pred, data_sample[,y])))

@@ -1,7 +1,7 @@
 
 ################################ CONFORMAL PREDICTION ###################################
 
-ICP <- function(data, formula, normalized = TRUE, conf = 0.95, beta = 1, ntree = 500, data_split = c(0.5, 0.25, 0.25)){
+ICP <- function(data, formula, normalized = TRUE, conf = 0.95, beta = 1, ntree = 500, data_split = c(0.575, 0.125, 0.3)){
   # set seed, so that the data splits will always be the same
   # good for testing different settings, but might remove in final version
   set.seed(12345)
