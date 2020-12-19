@@ -39,27 +39,30 @@ test = splits$test
 
 
 ############### for loop start
-
-# ICP
-res_icp = ICP(train, test, formula = formula, normalized = TRUE, beta = beta, ntree = ntree, conf = conf)
-
-res_icp$test_coverage_rate
-res_icp$mean_interval_size
-res_icp$runtime
-
-
-
-# BOOTSTRAP PARALLEL
-res_bs = bootstrap_parallel(train, test , formula = formula, conf = conf, ntree = ntree, R = R, cores = 8)
-
-# n = 1000 : 117
-
-res_bs$test_coverage_rate_e
-res_bs$mean_interval_size_e
-res_bs$test_coverage_rate_q
-res_bs$mean_interval_size_q
-res_bs$runtime
-
+for (i in 1:length(n_seq)) {
+  n = n_seq[i]
+  results$size[i] = n
+  
+  # ICP
+  res_icp = ICP(train, test, formula = formula, normalized = TRUE, beta = beta, ntree = ntree, conf = conf)
+  
+  results$icp_covrate[i] = res_icp$test_coverage_rate
+  results$icp_mean_interval_size[i] = res_icp$mean_interval_size
+  results$icp_runtime[i] = res_icp$runtime
+  
+  
+  # BOOTSTRAP PARALLEL
+  res_bs = bootstrap_parallel(train, test , formula = formula, conf = conf, ntree = ntree, R = R, cores = 8)
+  
+  # n = 1000 : 117
+  
+  results$bs_covrate[i] = res_bs$test_coverage_rate_e
+  results$bs_mean_interval_size[i] = res_bs$mean_interval_size_e
+  #res_bs$test_coverage_rate_q
+  #res_bs$mean_interval_size_q
+  results$bs_runtime[i] = res_bs$runtime
+  
+}
 ############### for loop end
 
 

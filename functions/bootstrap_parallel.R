@@ -9,21 +9,21 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
   # extract name of the response variable
   y = as.character(formula)[2]
   
- 
-  counter = 0
-  
+  # set number of cores to use in parallel if not specified
   if (is.na(cores)) {
     cores = detectCores()
   }
   
+  # function to generate random bootstrap replicate
   rng = function(data, mle){
     data_gen = data
     n = dim(data_gen)[1]
-    # generate new Rings (response)
+    # generate new response based on initial model and residuals (parametric)
     data_gen[,y] = rnorm(n, mle$prediction, sd(mle$residual))
     return(data_gen)
   }
   
+  counter = 0
   
   # function to fit model to randomly generated dataset (by rng) and predict to some original set (test)
   statistic_fun = function(data_gen, pars){
@@ -46,14 +46,11 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
   
   # estimate the parameters
   est = randomForest(formula = formula, data = train, ntree = ntree)
-  # predict using the estimated parameters
+  # predict on the training set using the estimated parameters
   prediction_0 = predict(est, newdata = train)
   # calculate residuals
   residual = train[,y] - prediction_0
   pars = list(prediction = prediction_0, residual = residual)
-
-  # function to generate random dataset from the original one and the estimates
- 
   
   param_bootstrap = boot(train, statistic = statistic_fun, R = R, 
                          mle = pars, ran.gen = rng, sim = "parametric", pars = pars,
@@ -66,23 +63,24 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
   
   
   e = envelope(param_bootstrap, level = conf)
-  # check if envelope() does the same thing as quantile()
   test$lower_e = e$point[2,]
   test$upper_e = e$point[1,]
   
+  # another way of calculating the intervals
   quantiles = apply(param_bootstrap$t, 2, quantile, probs = c((1-conf)/2, 1-(1-conf)/2))
   test$lower_q = quantiles[1,]
   test$upper_q = quantiles[2,]
   
+  # predictions on the test set
   prediction_test = predict(est, newdata = test)
   test$pred = prediction_test
   
-  # calculate test coverage rate
+  # calculate test coverage rate (both for the envelope and the quantile methods)
   n_test = dim(test)[1]
   test_coverage_rate_e = length(which(((test[,y] >= test$lower_e) * (test[,y] <= test$upper_e)) == 1)) / n_test
   test_coverage_rate_q = length(which(((test[,y] >= test$lower_q) * (test[,y] <= test$upper_q)) == 1)) / n_test
   
-  # average size of intervals
+  # average size of intervals (both for the envelope and the quantile methods)
   mean_interval_size_e = mean(test$upper_e - test$lower_e)
   mean_interval_size_q = mean(test$upper_q - test$lower_q)
   
