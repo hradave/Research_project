@@ -34,8 +34,8 @@ cores = 8
 
 
 # temporary n_seq
-n_seq = 1000
-
+n_seq = seq(1000, 3000, by = 500)
+#n_seq = 1000
 ############### for loop start
 for (i in 1:length(n_seq)) {
   n = n_seq[i]
@@ -73,5 +73,34 @@ for (i in 1:length(n_seq)) {
 }
 ############### for loop end
 
+save(results, file = "results.RData")
+load('results.RData')
+
+plot(results$size, results$icp_covrate, type = 'l', ylim = c(0.55,1), col = 'blue', ylab = 'Coverage rate', xlab = 'Data size')
+points(results$size, results$bs_covrate, type = 'l', col = 'red')
+abline(h = 0.95, lty = 2)
+legend('left', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
+
+plot(results$size, results$icp_mean_interval_size, type = 'l', ylim = c(0,0.3), col = 'blue', xlab = 'Data size', ylab = 'Mean interval region size')
+points(results$size, results$bs_mean_interval_size, type = 'l', col = 'red')
+legend('bottom', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
+
+plot(results$size, results$icp_runtime, type = 'l', ylim = c(1,1000), col = 'blue', xlab = 'Data size', ylab = 'Runtime')
+points(results$size, results$bs_runtime, type = 'l', col = 'red')
+legend('topleft', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
 
 
+
+
+
+#####
+par(mar = c(5,5,2,5))
+with(results, plot(size, icp_covrate, type="l", col='blue', ylab = 'Coverage rate', xlab = 'Data size', ylim = c(0.5,1)))
+with(results, points(size, bs_covrate, type="l", ylab = NA, xlab = NA, col='blue'))
+par(new = T)
+with(results, plot(size, icp_runtime, type = 'l', col = 'red', ylab = NA, xlab = NA, axes = F))
+axis(side = 4)
+mtext(side = 4, line = 3, 'Runtime (secs)')
+legend('bottom',
+       legend=c('MSE', 'Runtime'),
+       lty=c(1,1), col=c('blue', 'red'))
