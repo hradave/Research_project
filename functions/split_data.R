@@ -1,20 +1,19 @@
 split_data <- function(data, size){
   # set seed, so that the data splits will always be the same
-  # good for testing different settings, but might remove in final version
   set.seed(12345)
   
-  # create subset of the "big" dataframe
+  # create training and test pools of the "big" dataframe, to ensure that we use a previously unseen test set
   n = dim(data)[1]
-  id = sample(1:n, size)
-  data = data[id,]
+  train_pool_n = floor(0.7*n)
+  test_pool_n = floor(0.3*n)
+  train_pool = data[1:train_pool_n,]
+  test_pool = data[(train_pool_n+1):n,]
   
-  # Divide data into train and test sets (70% - 30%)
+  train_ids = sample(1:train_pool_n, floor(size*0.7))
+  train = train_pool[train_ids,]
   
-  train_id = sample(1:size, floor(size * 0.7)) # training ids
-  train = data[train_id,]
-  
-  test_id = setdiff(1:size, train_id) # test ids
-  test = data[test_id,]
+  test_ids = sample(1:test_pool_n, floor(size*0.3))
+  test = test_pool[test_ids,]
   
   return(list(train = train,
               test = test))

@@ -40,6 +40,7 @@ n_seq = 1000
 for (i in 1:length(n_seq)) {
   n = n_seq[i]
   results$size[i] = n
+  print(n)
   
   # split data into train and test sets
   splits = split_data(dataset, n)
@@ -53,6 +54,8 @@ for (i in 1:length(n_seq)) {
   results$icp_mean_interval_size[i] = res_icp$mean_interval_size
   results$icp_runtime[i] = res_icp$runtime
   
+  print(res_icp$runtime)
+  
   
   # BOOTSTRAP PARALLEL
   res_bs = bootstrap_parallel(train, test , formula = formula, conf = conf, ntree = ntree, R = R, cores = cores)
@@ -64,6 +67,8 @@ for (i in 1:length(n_seq)) {
   #res_bs$test_coverage_rate_q
   #res_bs$mean_interval_size_q
   results$bs_runtime[i] = res_bs$runtime
+  
+  print(res_bs$runtime)
   
 }
 ############### for loop end
