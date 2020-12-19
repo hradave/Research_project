@@ -2,19 +2,20 @@
 ################################ CONFORMAL PREDICTION ###################################
 
 ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta = 0.01, ntree = 125){
-  ### Implement Inductive Conformal Prediction (ICP) on the given dataset using Random Forest as the underlying model and evaluate it on the given test set
+  ### Implement Inductive Conformal Prediction (ICP) on the given dataset using Random Forest as the underlying model 
+  ### and evaluate it on the given test set to obtain prediction intervals
   
   ### Arguments
   # train_cal (data.frame): training set that is used for both proper training and calibration
   # test (data.frame: test set on which to evaluate the model and calculate prediction intervals
   # formula (formula): formula for training the Random Forest model
   # normalized (logical): whether to use a normalized or unnormalized nonconformity function
-  # conf (numeric): confidence level of the prediction region
+  # conf (numeric): confidence level of the prediction region (between 0 and 1)
   # beta (numeric): beta parameter to control the sensitivity of the nonconformity measure in the normalized case
   # ntree (integer): number of trees to use in the Random Forest
   
-  ### Values
-  # test (data.frame): test set augmented with the prediction and the lower and upper bounds
+  ### Values in the returned list
+  # test (data.frame): test set augmented with the predicted value and the lower and upper bounds
   # test_coverage_rate (numeric): coverage rate (1 - error rate) observed on the test data
   # mean_interval_size (numeric): mean of the prediction region sizes observed on the test data
   # runtime (numeric): time required to train the model (proper training + calibration) in seconds

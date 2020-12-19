@@ -1,7 +1,26 @@
+
 ################################ PARALLEL BOOTSTRAP PREDICTION ###################################
 
-
 bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree = 125, cores = NA){
+  ### Implement Bootstrapping on the given dataset using Random Forest as the underlying model 
+  ### and evaluate it on the given test set to obtain prediction intervals
+  
+  ### Arguments
+  # train (data.frame): training set that is used for training the Random Forest
+  # test (data.frame): test set on which to evaluate the model and calculate prediction intervals
+  # formula (formula): formula for training the Random Forest model
+  # conf (numeric): confidence level of the prediction region (between 0 and 1)
+  # R (integer): number of bootstrap replicates
+  # ntree (integer): number of trees to use in the Random Forest
+  # cores (integer): number of CPU cores to use in parallel during bootstrapping
+  
+  ### Values in the returned list
+  # test (data.frame): test set augmented with the predicted value and the lower and upper bounds
+  # test_coverage_rate_e (numeric): coverage rate (1 - error rate) observed on the test data using the envelope method
+  # mean_interval_size_e (numeric): mean of the prediction region sizes observed on the test data using the envelope method
+  # test_coverage_rate_q (numeric): coverage rate (1 - error rate) observed on the test data using the quantile method
+  # mean_interval_size_q (numeric): mean of the prediction region sizes observed on the test data using the quantile method
+  # runtime (numeric): time required to train the model (proper training + calibration) in seconds
   
   # set seed for reproducibility
   set.seed(12345)

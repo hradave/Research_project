@@ -30,18 +30,21 @@ formula = formula(y ~ .)
 beta = 0.01
 R = 500
 ntree = 125
+cores = 8
 
 
-# split data into train and test sets
-splits = split_data(dataset, n)
-train = splits$train
-test = splits$test
-
+# temporary n_seq
+n_seq = 1000
 
 ############### for loop start
 for (i in 1:length(n_seq)) {
   n = n_seq[i]
   results$size[i] = n
+  
+  # split data into train and test sets
+  splits = split_data(dataset, n)
+  train = splits$train
+  test = splits$test
   
   # ICP
   res_icp = ICP(train, test, formula = formula, normalized = TRUE, beta = beta, ntree = ntree, conf = conf)
@@ -52,7 +55,7 @@ for (i in 1:length(n_seq)) {
   
   
   # BOOTSTRAP PARALLEL
-  res_bs = bootstrap_parallel(train, test , formula = formula, conf = conf, ntree = ntree, R = R, cores = 8)
+  res_bs = bootstrap_parallel(train, test , formula = formula, conf = conf, ntree = ntree, R = R, cores = cores)
   
   # n = 1000 : 117
   
