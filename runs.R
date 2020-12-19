@@ -41,29 +41,24 @@ test = splits$test
 ############### for loop start
 
 # ICP
-start_time <- Sys.time()
 res_icp = ICP(train, test, formula = formula, normalized = TRUE, beta = beta, ntree = ntree, conf = conf)
-end_time <- Sys.time()
-runtime_icp = as.numeric(difftime(end_time, start_time, units = 'secs'))
-runtime_icp
 
 res_icp$test_coverage_rate
 res_icp$mean_interval_size
+res_icp$runtime
 
 
 
 # BOOTSTRAP PARALLEL
-start_time <- Sys.time()
 res_bs = bootstrap_parallel(train, test , formula = formula, conf = conf, ntree = ntree, R = R, cores = 8)
-end_time <- Sys.time()
-runtime_bs = as.numeric(difftime(end_time, start_time, units = 'secs'))
-runtime_bs
+
 # n = 1000 : 117
 
 res_bs$test_coverage_rate_e
 res_bs$mean_interval_size_e
 res_bs$test_coverage_rate_q
 res_bs$mean_interval_size_q
+res_bs$runtime
 
 ############### for loop end
 

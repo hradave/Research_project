@@ -22,14 +22,10 @@ ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta =
   # train random forest on the training set (measure CPU time)
   start_time <- Sys.time()
   rF <- randomForest(formula = formula, data = train, ntree = ntree)
-  end_time <- Sys.time()
-  runtime = as.numeric(difftime(end_time, start_time, units = 'secs'))
-  runtime
   
-  # predict for the calibration and test sets 
+  # predict for the calibration set
   # (predict.all is only necessary for the normalized version to get all individual tree predictions)
   rF_pred_cal <- predict(rF, newdata = cal, predict.all = TRUE)
-  rF_pred_test <- predict(rF, newdata = test, predict.all = TRUE)
   
   
   if (normalized) {
@@ -43,12 +39,20 @@ ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta =
     score_cal = abs(cal[,y] - rF_pred_cal$aggregate) / (mu_cal + beta)
     
     # find the smallest score that satisfies equation (3)
-    n_cal = dim(cal)[1]
+    #n_cal = dim(cal)[1]
     #score_bound = sort(score_cal)[n_cal * conf + 2] # find a better way than adding 2
-    score_bound = sort(score_cal, decreasing = T)[floor((1 - conf) * (n_cal + 1))] #p78 Evaluation of Variance-based nonconformity
+    score_bound = sort(score_cal, decreasing = T)[floor((1 - conf) * (cal_n + 1))] #p78 Evaluation of Variance-based nonconformity
     
     # check if equation holds
     #(sum(score_cal < score_bound) + 1) / (n_cal + 1) >= conf #Eq. 3 from Regression Conformal Prediction
+    
+    # end CPU timer (training over)
+    end_time <- Sys.time()
+    runtime = as.numeric(difftime(end_time, start_time, units = 'secs'))
+    
+    # predict for the test set
+    # (predict.all is only necessary for the normalized version to get all individual tree predictions)
+    rF_pred_test <- predict(rF, newdata = test, predict.all = TRUE)
     
     # difficulty estimate for the test set
     mu_test = apply(rF_pred_test$individual, 1, var)
@@ -65,12 +69,19 @@ ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta =
     score_cal = abs(cal[,y] - rF_pred_cal$aggregate)
     
     # find the smallest score that satisfies equation (3)
-    n_cal = dim(cal)[1]
+    #n_cal = dim(cal)[1]
     #score_bound = sort(score_cal)[n_cal * conf + 2] # find a better way than adding 2
-    score_bound = sort(score_cal, decreasing = T)[floor((1 - conf) * (n_cal + 1))] #p78 Evaluation of Variance-based nonconformity
+    score_bound = sort(score_cal, decreasing = T)[floor((1 - conf) * (cal_n + 1))] #p78 Evaluation of Variance-based nonconformity
     # check if equation holds
     #(sum(score_cal < score_bound) + 1) / (n_cal + 1) >= conf #Eq. 3 from Regression Conformal Prediction
     
+    # predict for the test set
+    # (predict.all is only necessary for the normalized version to get all individual tree predictions)
+    rF_pred_test <- predict(rF, newdata = test, predict.all = TRUE)
+    
+    # end CPU timer (training over)
+    end_time <- Sys.time()
+    runtime = as.numeric(difftime(end_time, start_time, units = 'secs'))
     
     # add prediction and bounds to the test df
     test$pred = rF_pred_test$aggregate
@@ -89,5 +100,6 @@ ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta =
   # output list
   res = list(test = test,
              test_coverage_rate = test_coverage_rate,
-             mean_interval_size = mean_interval_size)
+             mean_interval_size = mean_interval_size,
+             runtime = runtime)
 }

@@ -9,15 +9,13 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
   # extract name of the response variable
   y = as.character(formula)[2]
   
-  # estimate the parameters
-  est = randomForest(formula = formula, data = train, ntree = ntree)
-  # predict using the estimated parameters
-  prediction = predict(est, newdata = train)
-  # calculate residuals
-  residual = train[,y] - prediction
-  pars = list(prediction = prediction, residual = residual)
+ 
+  counter = 0
   
-  # function to generate random dataset from the original one and the estimates
+  if (is.na(cores)) {
+    cores = detectCores()
+  }
+  
   rng = function(data, mle){
     data_gen = data
     n = dim(data_gen)[1]
@@ -28,7 +26,7 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
   
   
   # function to fit model to randomly generated dataset (by rng) and predict to some original set (test)
-  prediction = function(data_gen, pars){
+  statistic_fun = function(data_gen, pars){
     # keep track of progress
     counter <<- counter + 1
     print(paste0('Progress: ', counter/R*100, '%'))
@@ -43,16 +41,28 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
     return(sim)
   }
   
-  counter = 0
+  # start CPU timer
+  start_time <- Sys.time()
   
-  if (is.na(cores)) {
-    cores = detectCores()
-  }
+  # estimate the parameters
+  est = randomForest(formula = formula, data = train, ntree = ntree)
+  # predict using the estimated parameters
+  prediction_0 = predict(est, newdata = train)
+  # calculate residuals
+  residual = train[,y] - prediction_0
+  pars = list(prediction = prediction_0, residual = residual)
+
+  # function to generate random dataset from the original one and the estimates
+ 
   
-  param_bootstrap = boot(train, statistic = prediction, R = R, 
+  param_bootstrap = boot(train, statistic = statistic_fun, R = R, 
                          mle = pars, ran.gen = rng, sim = "parametric", pars = pars,
                          parallel = "multicore", ncpus = cores)
   
+  
+  # end CPU timer (training over)
+  end_time <- Sys.time()
+  runtime = as.numeric(difftime(end_time, start_time, units = 'secs'))
   
   
   e = envelope(param_bootstrap, level = conf)
@@ -64,8 +74,8 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
   test$lower_q = quantiles[1,]
   test$upper_q = quantiles[2,]
   
-  prediction = predict(est, newdata = test)
-  test$pred = prediction
+  prediction_test = predict(est, newdata = test)
+  test$pred = prediction_test
   
   # calculate test coverage rate
   n_test = dim(test)[1]
@@ -81,6 +91,7 @@ bootstrap_parallel <- function(train, test, formula, conf = 0.95, R = 500, ntree
              test_coverage_rate_e = test_coverage_rate_e,
              mean_interval_size_e = mean_interval_size_e,
              test_coverage_rate_q = test_coverage_rate_q,
-             mean_interval_size_q = mean_interval_size_q)
+             mean_interval_size_q = mean_interval_size_q,
+             runtime = runtime)
   
 }
