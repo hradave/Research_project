@@ -33,13 +33,16 @@ ntree = 125
 cores = 8
 
 
-# temporary n_seq
-n_seq = seq(1000, 3000, by = 500)
+# create TEMPORARY dataframe to hold results
+n_seq = seq(4000, 6000, by = 1000)
+results2 = data.frame(matrix(nrow = length(n_seq), ncol = 7))
+colnames(results2) = c('size', 'icp_covrate', 'icp_mean_interval_size', 'icp_runtime', 
+                      'bs_covrate', 'bs_mean_interval_size', 'bs_runtime')
 #n_seq = 1000
 ############### for loop start
 for (i in 1:length(n_seq)) {
   n = n_seq[i]
-  results$size[i] = n
+  results2$size[i] = n
   print(n)
   
   # split data into train and test sets
@@ -50,9 +53,9 @@ for (i in 1:length(n_seq)) {
   # ICP
   res_icp = ICP(train, test, formula = formula, normalized = TRUE, beta = beta, ntree = ntree, conf = conf)
   
-  results$icp_covrate[i] = res_icp$test_coverage_rate
-  results$icp_mean_interval_size[i] = res_icp$mean_interval_size
-  results$icp_runtime[i] = res_icp$runtime
+  results2$icp_covrate[i] = res_icp$test_coverage_rate
+  results2$icp_mean_interval_size[i] = res_icp$mean_interval_size
+  results2$icp_runtime[i] = res_icp$runtime
   
   print(res_icp$runtime)
   
@@ -62,18 +65,18 @@ for (i in 1:length(n_seq)) {
   
   # n = 1000 : 117
   
-  results$bs_covrate[i] = res_bs$test_coverage_rate_e
-  results$bs_mean_interval_size[i] = res_bs$mean_interval_size_e
+  results2$bs_covrate[i] = res_bs$test_coverage_rate_e
+  results2$bs_mean_interval_size[i] = res_bs$mean_interval_size_e
   #res_bs$test_coverage_rate_q
   #res_bs$mean_interval_size_q
-  results$bs_runtime[i] = res_bs$runtime
+  results2$bs_runtime[i] = res_bs$runtime
   
   print(res_bs$runtime)
   
 }
 ############### for loop end
 
-save(results, file = "results.RData")
+save(results2, file = "results2.RData")
 load('results.RData')
 
 plot(results$size, results$icp_covrate, type = 'l', ylim = c(0.55,1), col = 'blue', ylab = 'Coverage rate', xlab = 'Data size')
