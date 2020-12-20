@@ -34,15 +34,15 @@ cores = 8
 
 
 # create TEMPORARY dataframe to hold results
-n_seq = seq(4000, 6000, by = 1000)
-results2 = data.frame(matrix(nrow = length(n_seq), ncol = 7))
-colnames(results2) = c('size', 'icp_covrate', 'icp_mean_interval_size', 'icp_runtime', 
+n_seq = seq(7000, 10000, by = 1000)
+results3 = data.frame(matrix(nrow = length(n_seq), ncol = 7))
+colnames(results3) = c('size', 'icp_covrate', 'icp_mean_interval_size', 'icp_runtime', 
                       'bs_covrate', 'bs_mean_interval_size', 'bs_runtime')
 #n_seq = 1000
 ############### for loop start
 for (i in 1:length(n_seq)) {
   n = n_seq[i]
-  results2$size[i] = n
+  results3$size[i] = n
   print(n)
   
   # split data into train and test sets
@@ -53,9 +53,9 @@ for (i in 1:length(n_seq)) {
   # ICP
   res_icp = ICP(train, test, formula = formula, normalized = TRUE, beta = beta, ntree = ntree, conf = conf)
   
-  results2$icp_covrate[i] = res_icp$test_coverage_rate
-  results2$icp_mean_interval_size[i] = res_icp$mean_interval_size
-  results2$icp_runtime[i] = res_icp$runtime
+  results3$icp_covrate[i] = res_icp$test_coverage_rate
+  results3$icp_mean_interval_size[i] = res_icp$mean_interval_size
+  results3$icp_runtime[i] = res_icp$runtime
   
   print(res_icp$runtime)
   
@@ -65,22 +65,25 @@ for (i in 1:length(n_seq)) {
   
   # n = 1000 : 117
   
-  results2$bs_covrate[i] = res_bs$test_coverage_rate_e
-  results2$bs_mean_interval_size[i] = res_bs$mean_interval_size_e
+  results3$bs_covrate[i] = res_bs$test_coverage_rate_e
+  results3$bs_mean_interval_size[i] = res_bs$mean_interval_size_e
   #res_bs$test_coverage_rate_q
   #res_bs$mean_interval_size_q
-  results2$bs_runtime[i] = res_bs$runtime
+  results3$bs_runtime[i] = res_bs$runtime
   
   print(res_bs$runtime)
   
 }
 ############### for loop end
 
-save(results2, file = "results2.RData")
+save(results3, file = "results3.RData")
 load('results.RData')
 
-plot(results$size, results$icp_covrate, type = 'l', ylim = c(0.55,1), col = 'blue', ylab = 'Coverage rate', xlab = 'Data size')
-points(results$size, results$bs_covrate, type = 'l', col = 'red')
+results_all = rbind(results[1:5,], results2, results3)
+save(results_all, file = "results_all.RData")
+
+plot(results_all$size, results_all$icp_covrate, type = 'l', ylim = c(0.55,1), col = 'blue', ylab = 'Coverage rate', xlab = 'Data size')
+points(results_all$size, results_all$bs_covrate, type = 'l', col = 'red')
 abline(h = 0.95, lty = 2)
 legend('left', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
 
