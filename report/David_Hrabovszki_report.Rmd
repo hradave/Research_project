@@ -1,0 +1,154 @@
+---
+title: 'Comparison of Conformal Prediction and Bootstrapping on a Regression Problem with Random Forests'
+#subtitle: '732A76 Research Project /n Linköping University'
+subtitle: '732A76 Research Project'
+author: |
+  | David Hrabovszki
+  | Linköping University
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  pdf_document:
+    fig_caption: yes
+    includes:
+      in_header: my_header.tex
+  html_document:
+    df_print: paged
+header-includes: \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r warning = FALSE, message = FALSE}
+# libraries
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+```
+
+```{r}
+load('results_all.RData')
+```
+
+
+# Abstract
+
+\pagebreak
+
+# Introduction
+
+Explain coverage rate, mean inteval sizes (size of prediction region), runtime.
+
+# Related Work
+
+
+
+# Methods
+
+## Random Forest
+
+Probably can skip this part.
+
+## Conformal Prediction
+
+## Bootstrap
+
+
+
+# Empirical Evaluation
+
+## Experimental Setup
+
+### Data Simulation
+
+Empirical experiments are often conducted on real world datasets, but because this research focuses on the parametric version of bootstrapping, we opted for an artificially simulated dataset instead. This means that we can be certain about the distribution of the response variable, which is necessary for parametric bootstrap.
+The implementation was based on [3] that uses an additive error model: 
+
+$Y = m(X) + \epsilon$ , where $X\sim\mathcal{N}(0,\Sigma_{50})$ and $\Sigma_{50}$ is an AR(1) covariance matrix with $\rho = 0.6$ and diagonal values equal to 1. The error term  $\epsilon$ is Gaussian noise and the $m(X)$ mean function is nonlinear with interaction between the predictors to make the data more complex. 100,000 instances were simulated from this model. The response variable is normalized, so that the resulting interval sizes can be more easily interpreted. An interval size of 0.5 means that the region covers 50% of the range the variable can take.
+
+
+### Data Splits
+
+The experiments use the holdout method for evaluation with 70% - 30% split between training and test sets. The first 70,000 instances were used as the pool for training and the last 30,000 for testing. For each different data size, the appropriate number of observations were sampled from these pools randomly to ensure that no test instance has been used for training or for validation while optimizing the parameters. It is important to note that while bootstrapping uses all training examples for training the random forest, conformal prediction utilizes only a part of it for proper training and the rest for calibration. A possible approach would have been to make the number of instances used for training equal for both methods, but since calibration is an important step in obtaining prediction intervals, I made the decision to use a subset of the training data for calibration. The number of calibration instances was set to $$q = 100 * \Bigg{\lfloor}\frac{|Z|}{400}\Bigg{\rfloor}-1$$ according to [1], where Z is the full training set. This means that around 20 - 25% of the full training set was used for calibration.
+
+### Computer Specifications
+
+The experiments were run on a notebook with an Intel Core i5-8250U processor (4-core 1.6 GHz base frequency) and 12GB of RAM. The conformal predictions were run on a single core, but the bootstrapping utilized all cores in parallel, which is straightforward to implement with the boot() function on a Linux system.
+
+### Chosen Parameters
+
+Three parameters were optimized using grid search: the number of trees in a random forest (ntree), the sensitivity of the nonconformity measure in conformal prediction (beta) and the number of bootstrap replicates (R). 
+10,000 instances were used from the training pool for the grid search, where **ntree** was chosen to be **125**, because this value resulted in a “low enough” mean squared error. A higher number of trees would make the predictions slightly more accurate, but only at the a significantly larger computation cost.
+**$\beta$** was chosen to be **0.01**, because the mean of conformal prediction region sizes was the smallest with this value, and the runtime was slightly shorter than with others. The confidence level set for the interval was barely affected by beta. The number of bootstrap replicates should be as large as possible, but increasing this parameter increases the runtime linearly, so the optimal value was set to a low value **(R = 200)** that still results in reasonably good coverage rates and mean region sizes.
+
+
+## Results
+
+Prediction intervals were constructed using conformal prediction and bootstrapping at 95% confidence level on artificially simulated datasets of sizes 1,000 - 10,000. In each run, we monitor the coverage rate, the mean interval size and the time required to train the models.
+
+Theoretically, the coverage rate of the conformal prediction should be around the confidence level [1], because the prediction intervals produced are always valid. This is exactly what we observe here as well, the coverage rate is slightly larger than 0.95, but it seems to converge to it as the number of observations grows. Bootstrapping, however, resulted in much lower coverage rates in all the runs, and there seems to be no indication that a larger dataset would solve this problem (Figure \ref{fig:covrate}).
+
+```{r fig.cap="\\label{fig:covrate} Coverage rates", out.width = "80%", fig.height = 4, fig.width = 6, fig.pos='!h', fig.align='center'}
+
+plot(results_all$size, results_all$icp_covrate, type = 'l', ylim = c(0.55,1), col = 'blue', ylab = 'Coverage rate', xlab = 'Data size')
+points(results_all$size, results_all$bs_covrate, type = 'l', col = 'red')
+abline(h = 0.95, lty = 2)
+legend('left', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
+
+```
+
+
+The mean size of the prediction regions decreases in both cases as the dataset grows, but the bands resulting from bootstrapping are much narrower, around half the size of the conformal prediction bands. The prediction regions cover around 10% of the whole range with bootstrapping, and 20% - 25% with conformal prediction (Figure \ref{fig:size}).
+
+```{r fig.cap="\\label{fig:size} Mean sizes of prediction regions", out.width = "80%", fig.height = 4, fig.width = 6, fig.pos='!h', fig.align='center'}
+
+plot(results_all$size, results_all$icp_mean_interval_size, type = 'l', ylim = c(0,0.3), col = 'blue', xlab = 'Data size', ylab = 'Mean interval region size')
+points(results_all$size, results_all$bs_mean_interval_size, type = 'l', col = 'red')
+legend('bottom', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
+
+```
+
+There is a significant difference between the runtimes of the two methods, even though it increases linearly  in both cases as we use more data. Conformal prediction in general seems to be much faster, than bootstrapping. Conformal prediction is measured in seconds, and bootstrapping is measured in minutes on Figure \ref{fig:runtime}. 
+
+```{r fig.cap="\\label{fig:runtime} Runtimes", out.width = "80%", fig.height = 4, fig.width = 6, fig.pos='!h', fig.align='center'}
+
+par(mar = c(5,5,2,5))
+with(results_all, plot(size, icp_runtime, type="l", col='blue', ylab = 'Runtime of CP (secs)', xlab = 'Data size'))
+par(new = T)
+with(results_all, plot(size, bs_runtime/60, type = 'l', col = 'red', ylab = NA, xlab = NA, axes = F))
+axis(side = 4)
+mtext(side = 4, line = 3, 'Runtime of BS (mins)')
+legend('bottom',
+       legend=c('CP', 'BS'),
+       lty=c(1,1), col=c('blue', 'red'))
+
+```
+
+# Conclusion
+
+# Future Improvements
+
+Several modifications could be made to improve this study of comparing two different methods. The parameters of the random forest and the number of bootstrap replicates could be further optimizied for different data sizes, but in this paper I intended to keep a setup unchanged for more straigthforward comparison. We could look at out-of-bag predictions of the random forests instead of using a separate set for either calibration or testing, but this would not necessarily improve predictive quality. It would be worth an experiment though, because then the available dataset would be better utilized. The data simulation process could be refined, and real world datasets could be used as well to see how the two methods compare against each other in a more real world setting.
+
+
+
+
+\pagebreak
+
+# Appendix
+
+```{r}
+results_all$icp_covrate = round(results_all$icp_covrate,3)
+results_all$icp_mean_interval_size = round(results_all$icp_mean_interval_size,3)
+results_all$icp_runtime = round(results_all$icp_runtime,1)
+results_all$bs_covrate = round(results_all$bs_covrate,3)
+results_all$bs_mean_interval_size = round(results_all$bs_mean_interval_size,3)
+results_all$bs_runtime = round(results_all$bs_runtime,1)
+colnames(results_all) = c("Size", "CP coverage rate", "CP region size", "CP runtime",
+                          "BS coverage rate", "BS region size", "BS runtime")
+kable(results_all, caption = "Results of experimental runs", 
+      label = "results", row.names = FALSE) %>%
+  kable_styling(latex_options = "hold_position")
+```
+

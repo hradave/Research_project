@@ -84,12 +84,11 @@ legend('topleft', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
 
 #####
 par(mar = c(5,5,2,5))
-with(results, plot(size, icp_covrate, type="l", col='blue', ylab = 'Coverage rate', xlab = 'Data size', ylim = c(0.5,1)))
-with(results, points(size, bs_covrate, type="l", ylab = NA, xlab = NA, col='blue'))
+with(results_all, plot(size, icp_runtime, type="l", col='blue', ylab = 'Runtime of CP (secs)', xlab = 'Data size'))
 par(new = T)
-with(results, plot(size, icp_runtime, type = 'l', col = 'red', ylab = NA, xlab = NA, axes = F))
+with(results_all, plot(size, bs_runtime/60, type = 'l', col = 'red', ylab = NA, xlab = NA, axes = F))
 axis(side = 4)
-mtext(side = 4, line = 3, 'Runtime (secs)')
+mtext(side = 4, line = 3, 'Runtime of BS (mins)')
 legend('bottom',
-       legend=c('MSE', 'Runtime'),
+       legend=c('CP', 'BS'),
        lty=c(1,1), col=c('blue', 'red'))
