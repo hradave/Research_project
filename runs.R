@@ -12,7 +12,7 @@ source("functions/normalize.R")
 source("functions/split_data.R")
 
 # load full dataset and normalize target
-load("synth_data_50.RData")
+load("data/synth_data_50.RData")
 dataset$y = normalize(dataset$y)
 
 # create dataframe to hold results

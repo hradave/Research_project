@@ -15,7 +15,7 @@ plot(dataset$x1, dataset$y)
 hist(normalize(dataset$y), breaks = 50)
 data = dataset[1:10000,]
 
-save(dataset, file = "synth_data_50.RData")
+save(dataset, file = "data/synth_data_50.RData")
 
 
 lm = lm(formula = y ~ ., data = data)
