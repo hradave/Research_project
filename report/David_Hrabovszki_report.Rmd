@@ -14,6 +14,7 @@ output:
   html_document:
     df_print: paged
 header-includes: \usepackage{float}
+bibliography: bibliopaper.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -48,7 +49,9 @@ Explain coverage rate, mean inteval sizes (size of prediction region), runtime.
 
 ## Random Forest
 
-Probably can skip this part.
+Probably can skip this part [@conf2014].
+[@var2016]
+[@sim2020]
 
 ## Conformal Prediction
 
@@ -171,7 +174,8 @@ Several modifications could be made to improve this study of comparing two diffe
 
 # References
 
-
+::: {#refs}
+:::
 
 # Appendix
 
