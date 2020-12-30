@@ -66,7 +66,7 @@ Probably can skip this part [@conf2014].
 ### Data Simulation
 
 Empirical experiments are often conducted on real world datasets, but because this research focuses on the parametric version of bootstrapping, we opted for an artificially simulated dataset instead. This means that we can be certain about the distribution of the response variable, which is necessary for parametric bootstrap.
-The implementation was based on [3] that uses an additive error model: 
+The implementation was based on a previous paper that uses an additive error model [@sim2020]: 
 
 $Y = m(X) + \epsilon$ , where $X\sim\mathcal{N}(0,\Sigma_{50})$ and $\Sigma_{50}$ is an AR(1) covariance matrix with $\rho = 0.6$ and diagonal values equal to 1. The error term  $\epsilon$ is Gaussian noise and the $m(X)$ mean function is nonlinear with interaction between the predictors to make the data more complex. 100,000 instances were simulated from this model. The response variable is normalized, so that the resulting interval sizes can be more easily interpreted. An interval size of 0.5 means that the region covers 50% of the range the variable can take.
 

@@ -1,12 +1,16 @@
+
+############################## OPTIMIZE NTREE #################################
+
 # find the best ntree parameters for the random forest
 library(randomForest)
 
+# ntree values to do grid search on
 ntree_seq = seq(25,500,by=25)
 ntree_table = matrix(nrow=length(ntree_seq), ncol = 3)
 ntree_table = as.data.frame(ntree_table)
 colnames(ntree_table) = c('ntree', 'MSE', 'runtime')
 
-load("synth_data_50.RData")
+load("data/synth_data_50.RData")
 dataset = dataset[1:10000,]
 source('functions/MSE.R')
 
@@ -32,7 +36,7 @@ for (i in 1:length(ntree_seq)){
 }
 
 # save df for future use
-save(ntree_table, file = "ntree_table.RData")
+save(ntree_table, file = "data/ntree_table.RData")
 
 
 par(mar = c(5,5,2,5))
@@ -46,9 +50,7 @@ legend(x = 50, y= 140,
        lty=c(1,1), col=c('blue', 'red'))
 
 
-#plot(ntree_table$ntree, ntree_table$MSE, type = 'l', xlab = 'number of trees', ylab = 'MSE', col = 'blue', main = 'Accuracy of Random Forest')
-#plot(ntree_table$ntree, ntree_table$runtime, type = 'l', xlab = 'number of trees', ylab = 'Runtime (secs)', col = 'red', main = 'Runtime of Random Forest')
-
+# OPTIMAL CHOICE = 125
 
 # check performance of linear model
 lmodel = lm(formula = y ~ ., data = train)

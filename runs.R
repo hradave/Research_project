@@ -1,3 +1,6 @@
+
+############################## RUN EXPERIMENTS #################################
+
 # load libraries
 library(randomForest)
 library(boot)
@@ -5,7 +8,6 @@ library(parallel)
 
 # load scripts
 source("functions/ICP.R")
-source("functions/bootstrap.R")
 source("functions/bootstrap_parallel.R")
 source("functions/plot_prediction_bands.R")
 source("functions/normalize.R")
@@ -62,8 +64,11 @@ for (i in 1:length(n_seq)) {
 }
 ############### for loop end
 
-save(results_all, file = "results_all.RData")
-load('results_all.RData')
+
+# plot results
+
+save(results_all, file = "data/results_all.RData")
+load('data/results_all.RData')
 
 plot(results_all$size, results_all$icp_covrate, type = 'l', ylim = c(0.55,1), col = 'blue', ylab = 'Coverage rate', xlab = 'Data size')
 points(results_all$size, results_all$bs_covrate, type = 'l', col = 'red')
@@ -82,7 +87,7 @@ legend('topleft', legend=c('ICP', 'BS'), lty=c(1,1), col=c('blue', 'red'))
 
 
 
-#####
+##### runtime on dual axis
 par(mar = c(5,5,2,5))
 with(results_all, plot(size, icp_runtime, type="l", col='blue', ylab = 'Runtime of CP (secs)', xlab = 'Data size'))
 par(new = T)

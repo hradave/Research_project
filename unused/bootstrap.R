@@ -1,5 +1,5 @@
-################################ BOOTSTRAP PREDICTION ###################################
 
+################################ BOOTSTRAP PREDICTION (NOT USED IN THE REPORT) ###################################
 
 bootstrap <- function(data, formula, conf = 0.95, R = 100, ntree = 500, data_split = c(0.7, 0.3)){
   

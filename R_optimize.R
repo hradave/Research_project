@@ -1,4 +1,7 @@
-# find the best R parameters for the random forest bootstrap
+
+############################## OPTIMIZE R #################################
+
+# find the best R parameter for the random forest bootstrap
 library(randomForest)
 library(boot)
 library(parallel)
@@ -9,9 +12,8 @@ R_seq_table = matrix(nrow=length(R_seq), ncol = 6)
 R_seq_table = as.data.frame(R_seq_table)
 colnames(R_seq_table) = c('R', 'runtime', 'coverage_rate_e', 'mean_interval_size_e', 'coverage_rate_q', 'mean_interval_size_q')
 
-load("synth_data_50.RData")
+load("data/synth_data_50.RData")
 
-source("functions/bootstrap.R")
 source("functions/bootstrap_parallel.R")
 source("functions/plot_prediction_bands.R")
 source('functions/normalize.R')

@@ -1,5 +1,5 @@
 
-########## PLOT RESULTS
+########## PLOT RESULTS (NOT USED IN THE REPORT)
 
 plot_prediction_bands <- function(data, x, y, sample_size = 100, type = 'cp', title = '', conf = 0.95, bs_type = 'e'){
   

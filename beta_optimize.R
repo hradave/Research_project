@@ -1,3 +1,7 @@
+
+############################## OPTIMIZE BETA #################################
+
+
 # find the best beta parameter for the normalized conformal prediction
 library(randomForest)
 source('functions/ICP.R')
@@ -8,7 +12,7 @@ beta_table = matrix(nrow=length(beta_seq), ncol = 4)
 beta_table = as.data.frame(beta_table)
 colnames(beta_table) = c('beta', 'coverage_rate', 'mean_interval_size', 'runtime')
 
-load("synth_data_50.RData")
+load("data/synth_data_50.RData")
 dataset = dataset[1:10000,]
 dataset$y = normalize(dataset$y)
 
@@ -31,7 +35,7 @@ for (i in 1:length(beta_seq)){
 }
 
 # save df for future use
-save(beta_table, file = "beta_table.RData")
+save(beta_table, file = "data/beta_table.RData")
 
 
 par(mar = c(5,5,2,5))
