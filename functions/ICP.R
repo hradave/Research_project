@@ -89,13 +89,13 @@ ICP <- function(train_cal, test, formula, normalized = TRUE, conf = 0.95, beta =
     # check if equation holds
     #(sum(score_cal < score_bound) + 1) / (n_cal + 1) >= conf #Eq. 3 from Regression Conformal Prediction
     
-    # predict for the test set
-    # (predict.all is only necessary for the normalized version to get all individual tree predictions)
-    rF_pred_test <- predict(rF, newdata = test, predict.all = TRUE)
-    
     # end CPU timer (training over)
     end_time <- Sys.time()
     runtime = as.numeric(difftime(end_time, start_time, units = 'secs'))
+    
+    # predict for the test set
+    # (predict.all is only necessary for the normalized version to get all individual tree predictions)
+    rF_pred_test <- predict(rF, newdata = test, predict.all = TRUE)
     
     # add prediction and bounds to the test df
     test$pred = rF_pred_test$aggregate

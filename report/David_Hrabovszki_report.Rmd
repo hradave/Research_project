@@ -41,23 +41,42 @@ load('results_all.RData')
 
 Explain coverage rate, mean inteval sizes (size of prediction region), runtime.
 
-# Related Work
-
-
+The competing methods are evaluated along three metrics: coverage rate, mean size of prediction regions, runtime. Coverage rate is the ratio of the test instances that fall into the prediction region, mean size of prediction regions is referred to as efficiency in [@conf2014] and is simply the average of the prediction intervals over the test set. Runtime is the CPU time needed to train the models, and to calibrate the nonconformity scores in the case of conformal prediction. Prediction times are not included in this measure.
 
 # Methods
 
-## Random Forest
-
-Probably can skip this part [@conf2014].
-[@var2016]
-[@sim2020]
-
 ## Conformal Prediction
+
+The use of conformal prediction allows us to obtain a prediction region instead of a single-point prediction, where the regions can be different sizes for each instance. It also guarantees that the probability of making an error (the test instance being outside the prediction interval) is bounded by a confidence level set by the user, this makes all conformal predictors valid [@conf2014]. Conformal prediction can be built on an arbitrary prediction model, in this paper a random forest is used for this purpose.
+
+In this paper, similarly to the one referenced above, inductive conformal prediction is implemented, where the underlying model only has to be trained once on the training set, which can be used for prediction on the test set. In this case however, a separate dataset is required to calibrate the nonconformity scores.
+
+The nonconformity scores are calculated on the calibration and test sets using the nonconformity function, which is usually related to the absolute error of the prediction for each instance:
+
+$$\alpha_i = |y_i-\hat{y_i}|$$
+
+The scores represent how different the new example is from the old ones. If it is relatively small, then that instance fits well into the model that we trained on the training set. The role of the calibration set is to find the smallest nonconformity score, compared to which, at least 95% (or other confidence level) of the calibration data points' scores are smaller. Taking this smallest score (bound) $\alpha_{s(\delta)}$ , we can create prediction regions for the test instances by adding this bound to and subtracting it from the predicted value:
+
+$$\hat{Y}_j^{\delta}=\hat{y}_j+-\alpha_{s(\delta)}$$
+
+Since this method does not depend on the individual test observation, the regions will have the same size, which would cancel one of the main advantages of conformal prediction. Therefore, this paper employs a normalized nonconformity function instead, where the scores are calculated by dividing the absolute prediction error by $\sigma_i$, which is the estimated difficulty of the random forest model for making a correct prediction for instance $y_i$.
+
+$$\alpha_i = \frac{|y_i-\hat{y_i}|}{\sigma_i}$$
+
+The prediction intervals then become:
+
+$$\hat{Y}_j^{\delta}=\hat{y}_j+-\alpha_{s(\delta)}*\sigma_j$$
+
+There are several very different ways to calculate $\sigma$, but this paper builds on the conclusions of the experiments in [@var2016], and implements the method which proved to be the least computationally expensive, but equally efficient approach, the variance-based measure. This method takes the variance of the predictions of the individual trees in the random forest as the difficulty of each instance, because it assumes that there is a larger understanding (smaller variance) between the trees, if the instance is easy to predict. The nonconformity scores are calculated this way:
+
+$$\alpha_i = \frac{|y_i-\hat{y_i}|}{\mu_i+\beta}$$
+where $\beta$ is a parameter that controls the sensitivity of the nonconformity measure and $\mu_i$ is the variance of the individual predictions for instance $i$.
 
 ## Bootstrap
 
+Bootstrapping is a widely used algorithm for creating confidence and prediction intervals using datasets randomly sampled with replacement (non-parametric) or generated from their distributions (parametric). Since this paper experiments with artificially simulated data, so the distribution of the response value is known, the more precise parametric version can be implemented. 
 
+A specified number (R) of training set replicates are generated, the random forest model is trained on each of them, and the predictions are made for the test test in every iteration. This results in a distribution of prediction values for every test instance, and the quantile method can be used to obtain 95% (or any other) confidence or prediction bands.
 
 # Empirical Evaluation
 
